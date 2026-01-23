@@ -1,0 +1,68 @@
+services:
+    # define all docker images
+    db:
+        #the official postgres docker image. Postgres is version 16
+        image: postgres:16
+        # environment variables for this docker image
+        environment:
+            # the db name, username and password for logging in to the db
+            POSTGRES_DB: appdb
+            POSTGRES_USER: appuser
+            POSTGRES_PASSWORD: apppass
+        # mention a volume so that we can access the data from local m/c
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        #define ports so that we can access this db from local m/c. We can access this from port 5432
+        ports:
+            - "5432:5432"
+    
+    #another volume
+    redis:
+        image: redis:7
+        ports:
+            - "6379:6379"
+    #the reason we dont specify a volume is because it uses only the ram of the container. We only specify volumes if we want to share permanent storage (ssd)
+
+    #this container will be based on the dockerfile we wrote.
+    web:
+        # since the dockerfile and context are from current directory (where docker-compose is localted), we only specify "." for build
+        build: .
+        #this command will be run after the container starts
+        # this command runs migrations and starts the django server at localhost and port 8000 (in the container NOT in local m/c)
+        command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+        volumes:
+            - .:/app
+        # note that the port number of this container and the port number in the command are matching
+        ports:
+            - "8000:8000"
+        environment:
+            DJANGO_SETTINGS_MODULE: config.settings
+            # the url to which we can connect to the db. Note that we provide the username, password, port no. and the db name in the url
+            DATABASE_URL: postgres://appuser:apppass@db:5432/appdb
+            # the url to which we can connect to redis
+            REDIS_URL: redis://redis:6379/0
+        # we want to start this container after db and redis starts. We do this as we're connecting to the urls
+        depends_on:
+            - db
+            - redis
+
+    # this container is used for running celery
+    worker:
+        build: .
+        # here we're starting the celery module which is located in config/celery.py
+        # the -A config means: to start celery application, go to a folder called config and search for celery.py file
+        # the -l info sets the logging level. We've 4 levels of logging (error, warning, info and debug) and they start from least logging to most logging. We choose info as its most appropriate
+        command: celery -A config worker -l info
+        volumes:
+            - .:/app
+        environment:
+            DJANGO_SETTINGS_MODULE: config.settings
+            DATABASE_URL: postgres://appuser:apppass@db:5432/appdb
+            REDIS_URL: redis://redis:6379/0
+        depends_on:
+            - db
+            - redis
+
+volumes:
+    postgres_data:
+

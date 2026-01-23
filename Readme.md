@@ -81,7 +81,7 @@ Make 2 folders called apps and config: `mkdir -p apps config`
 Inside the folder apps, create the following subfolders: `mkdir -p apps/studies apps/participants apps/forms apps/audit apps/exports`
 
 ## Root folder
-from hereon root folder will mean where the current project is i.e `longitudinal-edc/` is the root folder
+from hereon root folder will mean where the current project is i.e `longitudinal-edc/` is the project root folder
 
 ## Create requirements.txt
 `requirements.txt` will contain all the libraries we'll need for this project. In the root folder create that file and add this:
@@ -104,4 +104,29 @@ This is what each packages do:
 6. python-dotenv: a utility used for loading env variables from `.env` file
 
 ## Building Dockerfile
-Create a file called `Dockerfile` in project root. Explanation given in that file
+Create a file called `Dockerfile` in project root. Explanation given in that file. Also create a `.dockerignore` file.
+
+## Building docker compose
+in project root, create a file called `docker-compose.yml`
+
+## Running docker compose
+in wsl terminal, go to your project root and run this command: `docker composer run --rm web django-admin startproject config .`. The django-admin command will be run in the web container.
+Once you run the above command, the images for postgres and redis will be downloaded. Then the `build-essential` package and packages from `requirements.txt` will be downloaded in the `web` container.
+
+Also you can see that django has been installed in the folder `config`
+
+## Configure django to use postgres from docker
+go to `settings.py` in config and scroll to `DATABASES` object and set it to postgres
+
+## Specifying hosts which can connect to backend
+in `ALLOWED_HOSTS`, add the values "localhost" and "127.0.0.1" so that we can connect to this backend from our localhost
+
+## Creating apps
+our web app will contain multiple webpages which handle a particular functionality. For each of these functionalities we'll create separate django apps. The apps are:
+1. studies
+2. participants
+3. forms
+4. audit
+5. exports
+
+to create these apps use the command `docker compose run --rm web python manage.py startapp <app-name> apps/<app-name>`

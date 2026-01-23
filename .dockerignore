@@ -1,0 +1,10 @@
+# the git folder
+.git
+# this folder contains python compiled (.pyc) files
+__pycache__
+# env file
+.env
+# python bytecode files
+*.pyc
+# local venv
+venv
