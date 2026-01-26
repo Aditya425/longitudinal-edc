@@ -103,8 +103,20 @@ This is what each packages do:
 5. celery: its used to run tasks asynchronously. This is used when we export datasets
 6. python-dotenv: a utility used for loading env variables from `.env` file
 
+## how are celery and redis used
+task queues are queues which contain task in them and it is used to distribute the tasks to across different processes. In our project the task queue is redis.
+
+Celery's job is to accept the task from redis and start processing them asynchronously. The process spawned for this is called worker process. The code for the worker process is given in config/celery.py
+
 ## Building Dockerfile
 Create a file called `Dockerfile` in project root. Explanation given in that file. Also create a `.dockerignore` file.
+
+## Configuring celery
+`celery.py` is a configuration file for celery package. It basically contains the code for the worker. Create the file here `config/celery.py` and write the config
+
+Next create an `__init__.py` in config folder. In that first import the celery object from `celery.py` and add that into `__all__` tuple. This is done cuz celery won't just import `celery.py` but imports the whole `config` folder, so we need to expose the celery object by importing it in `__init__.py` and then including it in `__all__`.
+
+Finally in `config/settings.py` add some vars which define the configuration
 
 ## Building docker compose
 in project root, create a file called `docker-compose.yml`
@@ -129,4 +141,12 @@ our web app will contain multiple webpages which handle a particular functionali
 4. audit
 5. exports
 
-to create these apps use the command `docker compose run --rm web python manage.py startapp <app-name> apps/<app-name>`
+to create these apps use the command `docker compose run --rm web python manage.py startapp <app-name> apps/<app-name>`.
+
+After doing this add the app names into `INSTALLED_APPS` in `settings.py`. Also in `INSTALLED_APPS` add `rest_framework`, this enables the django rest framework.
+
+We also need to apps `__init__.py` to `apps` folder and the django apps we created. We do this so that we can import them as packages whenever needed. To do that use this command:
+`touch apps/__init__.py` and `touch apps/<app1>/__init__.py apps/<app2>/__init__.py` for app1 to app5
+
+## Start all containers
+enter the command `docker compose up --build` and then open `http://localhost:8000`

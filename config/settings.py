@@ -39,6 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "apps.studies",
+    "apps.participants",
+    "apps.forms",
+    "apps.audit",
+    "apps.exports",
+    "rest_framework"
 ]
 
 MIDDLEWARE = [
@@ -138,3 +144,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# celery settings
+# sets the message broker (queue) which is redis. We've to give the url and port number to the redis process
+# here /0 at the end is the db index. Here we're providing the first index of redis db which is accessible
+CELERY_BROKER_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
+# the data type of tasks which celery will process which is json
+CELERY_ACCEPT_CONTENT = ["json"]
+# this setting says that to convert the task data as a json before adding it to redis. This setting has nothing to do with above statement
+# eg: if the task is "pdf_upload.delay(42)" then before adding it to redis, it'll become {task: pdf_upload, delay: 42} and then be added to redis. When the destination process accepts it, it'll be deserialized to "pdf_upload.delay(42)" 
+CELERY_TASK_SERIALIZER = "json"
