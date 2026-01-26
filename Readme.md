@@ -150,3 +150,17 @@ We also need to apps `__init__.py` to `apps` folder and the django apps we creat
 
 ## Start all containers
 enter the command `docker compose up --build` and then open `http://localhost:8000`
+
+## what each of the apps means
+study: it represents a real clinical study. It contains info about the study conducted. Eg: name, description of the study
+participants: this contains all the participants (patients) details.
+visit: this represents a timepoint. our app supports 3 timepoints: baseline, month 3 and year 1
+form: the data collected from a patient during visit
+audit: contains the audit trail
+exports: contains code related to exporting datasets using celery
+
+# Creating models
+now we'll begin with the project. We'll start by creating the models
+
+## Study model
+in `apps/studies/models.py` create the model
