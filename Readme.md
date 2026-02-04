@@ -164,3 +164,21 @@ now we'll begin with the project. We'll start by creating the models
 
 ## Study model
 in `apps/studies/models.py` create the model
+
+## Participant model
+this will have a foreign key with study
+
+## Visit model
+this will have a foreign key with participant
+
+## Form model
+this will have foreign key with visit
+
+## Audit model
+this will have a foreign key with the django user model class
+
+## Export job
+here we add the details on what data needs to be exported by celery. Put this in `apps/exports/models.py`
+
+## Make the migrations
+in the wsl terminal run `docker compose run web python manage.py makemigrations` and `docker compose run web python manage.py migrate`
