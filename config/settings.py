@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "apps.studies",
-    "apps.participants",
+    #we use this instead of "apps.participants" as we're using a custom class which inherits AppConfig
+    "participants.apps.ParticipantsConfig",
     "apps.forms",
     "apps.audit",
     "apps.exports",

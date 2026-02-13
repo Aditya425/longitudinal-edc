@@ -182,3 +182,26 @@ here we add the details on what data needs to be exported by celery. Put this in
 
 ## Make the migrations
 in the wsl terminal run `docker compose run web python manage.py makemigrations` and `docker compose run web python manage.py migrate`
+
+## Create admin user
+we're going to create an admin who can create a study and protocol. Run the commands `docker compose exec web python manage.py createsuperuser` with the following credentials
+Username: Aditya
+Email: adityadixit425@gmail.com
+Password: Aditya123
+
+# Auto scheduling
+whenever a participant is registered with their baseline dates, we want to automatically schedules tests for them on 3rd month (90 days) and 1 year (365 days). Basically participant comes on baseline date (day 0) then we need to schedule their visit automatically on day 0 + 90 (3rd month) and day 0 + 365 (1 year).
+
+## Defining protocol schedule
+create a file `participants/protocol.py`. Here we'll define the protocol as a list. The list will contain the target_day, window_before and window_after. Do this for baseline, month 3 and 1 year
+pg=48
+
+## creating the auto scheduler function
+create a file called `participants/services.py`. Here we'll create the function which takes a participant and the study's visit protocol and schedules them based on the protocol we defined above.
+
+What we mean by auto schedule is that when a particular participant has a foreign key in the visit table then it means they're scheduled. Whenever we create a new participant, we also want to fill in the Visit table with the appropriate dates. This function enables to do that
+
+## Creating signals
+now we'll create a signal which will invoke the auto scheduler function after a participant is created. First create `signals.py` in Participant folder and write the signal.
+
+in `participant/apps.py` create the `ready` function and import the receivers to register them. Also update `INSTALLED_APPS` in `settings.py` with `participants.apps.ParticipantsConfig` instead of `apps.participants`
