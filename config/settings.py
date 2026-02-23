@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "apps.studies",
     #we use this instead of "apps.participants" as we're using a custom class which inherits AppConfig
-    "apps.participants",
+    "apps.participants.apps.ParticipantsConfig",
     "apps.forms",
     "apps.audit",
     "apps.exports",
