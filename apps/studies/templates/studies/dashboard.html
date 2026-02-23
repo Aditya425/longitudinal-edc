@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<!--using bootstrap for css-->
+<div class="container mt-4">
+    <h2>Study Dashboard</h2>
+
+    <table class="table-bordered table-hover mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>Protocol ID</th>
+                <th>Created</th>
+                <th>Participants</th>
+                <th>Total Visits</th>
+                <th>Completed</th>
+                <th>Completion %</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!--looping through dashboard_data which we created earlier in "study_dashboard" method of views.py-->
+            {% for row in dashboard_data %}
+            <tr>
+                <td>
+                    <a href="{% url 'participant_list' row.study.id %}">{{ row.study.name }}</a>
+                </td>
+                <td>{{ row.study.protocol_id }}</td>
+                <td>{{ row.study.created_at|date:"Y-m-d" }}</td>
+                <td>{{ row.participants_count }}</td>
+                <td>{{ row.total_visits }}</td>
+                <td>{{ row.completed_visits }}</td>
+                <td>
+                    {% if row.completion_rate >= 80 %}
+                    <span class="badge bg-success">{{ row.completion_rate }}%</span>
+                    {% elif row.completion_rate >= 50 %}
+                    <span class="badge bg-warning text-dark">{{ row.completion_rate }}%</span>
+                    {% else %}
+                    <span class="badge bg-danger">{{ row.completion_rate }}%</span>
+                    {% endif %}
+                </td>
+            </tr>
+            <!--If dashboard_data is empty-->
+            {% empty %}
+            <tr>
+                <td colspan="7">No studies available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
