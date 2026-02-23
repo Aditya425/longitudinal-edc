@@ -210,6 +210,7 @@ in `participant/apps.py` create the `ready` function and import the receivers to
 ## Study dashboard
 this displays the list of studies, number of participants and % of visit completion (i.e the %age of participants whose visit has been completed). Go to `studies/views.py` and write your views there.
 Next go to `studies/urls.py` and add the url to that view. Then go to `config/urls.py` and add the link to `studies/urls.py`.
-Next we'll create the template. First create the folder called `templates` in studies app. Then inside `templates` create `studies` folder. Inside that create a file `dashboard.html` "templates/studies/dashboard.html"
+Next we'll create the template. First create the folder called `templates` in studies app. Then inside `templates` create `studies` folder. Inside that create a file `dashboard.html`
 Next we'll create a folder which'll contain common html files of our project. Create a folder called `templates` in project root. In `settings.py`, go to `TEMPLATES` and in `DIRS` add the location of the `templates` folder.
 Now, inside `templates`, create the file `base.html`. Here we'll add the bootstrap config, navbar and the main page content.
+"Build the web UI (simple but real)"
