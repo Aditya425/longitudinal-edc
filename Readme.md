@@ -213,4 +213,11 @@ Next go to `studies/urls.py` and add the url to that view. Then go to `config/ur
 Next we'll create the template. First create the folder called `templates` in studies app. Then inside `templates` create `studies` folder. Inside that create a file `dashboard.html`
 Next we'll create a folder which'll contain common html files of our project. Create a folder called `templates` in project root. In `settings.py`, go to `TEMPLATES` and in `DIRS` add the location of the `templates` folder.
 Now, inside `templates`, create the file `base.html`. Here we'll add the bootstrap config, navbar and the main page content.
-"Build the web UI (simple but real)"
+
+## Study Detail Page
+when you click on a study, you get the details of that study. First go to `studies/views.py` and add the view. Next go to `studies/urls.py` and add the url for the view you created. Next go to `studies/templates/dashboard.html` and update it so that it goes to a particular study.
+Next we'll create the template for the study detail. Create `studies/templates/studies/detail.html` and write your template
+
+## Add search functionality for studies
+here we'll add the functionality to search for studies. Go to `studies/views.py` and modify the `study_dashboard` view.
+Next add the search icon and create a form in `studies/templates/studies/dashboard.html`
