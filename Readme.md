@@ -83,6 +83,14 @@ Inside the folder apps, create the following subfolders: `mkdir -p apps/studies 
 ## Root folder
 from hereon root folder will mean where the current project is i.e `longitudinal-edc/` is the project root folder
 
+## Important Note
+after doing `docker compose up` in the linux terminal, when you open a new linux terminal, the pwd will be inside the docker container. If you want to run any other docker commands, it won't run cuz you need to be in the location where `docker-compose.yml` is present and currently you're in the docker terminal. To solve this, open a new wsl terminal and type
+```
+cd (to go into root directory)
+ cd /mnt/c/Users/adity/OneDrive/Documents/Django-Tutorial/longitudinal-edc/ (to go into directory where docker-compose.yml is present)
+```
+after this you can run any docker command
+
 ## Create requirements.txt
 `requirements.txt` will contain all the libraries we'll need for this project. In the root folder create that file and add this:
 ```txt
@@ -221,3 +229,10 @@ Next we'll create the template for the study detail. Create `studies/templates/s
 ## Add search functionality for studies
 here we'll add the functionality to search for studies. Go to `studies/views.py` and modify the `study_dashboard` view.
 Next add the search icon and create a form in `studies/templates/studies/dashboard.html`
+
+## Building participant list
+here we'll build the page where we list all the participants. The url for this is `/studies/<study_id>/participants`.
+First create the view in `apps/participants/views.py`
+Next create the url for this in `apps/participants/urls.py` then go to `config/urls.py` and include the participants app.
+Create a template. go to `apps/participants/templates/participants` and create the file `list.html` and write your template code.
+Finally add the link in the study's detail page so that whenever we click on a study, it should go to this view. Go to `apps/studies/templates/studies/detail.html` and add the link in the appropriate part. "Step 5 — Add Link From Study Page"

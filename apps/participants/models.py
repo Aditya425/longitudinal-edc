@@ -33,8 +33,8 @@ class Visit(models.Model):
     #the ideal date when the participant should visit. For eg: if we consider baseline as Jan 1 then due_date will be Jan 1 (the actual date which participant visited is recorded in actual_date). Also when we calculate dates after baseline then it is: due_date = baseline + visit_type. Eg: if baseline is on Jan 1 and we want to calculate the due_date for the participant for month 3 then we do: Jan 1 + month_3 = Jan 1 + 90 = April 1 i.e 01/04/2026
     due_date = models.DateField()
     #window_before and window_after. This is the date not days
-    window_start = models.DateField()
-    window_end = models.DateField()
+    window_start = models.DateField(null=True)
+    window_end = models.DateField(null=True)
     #the status of the visit
     #scheduled: planned but not done yet, completed: participant has visited (actual_date != NULL), missed: window has passed (current date > window_end)
     status = models.CharField(max_length=20, choices=[('scheduled', 'Scheduled'), ('completed', 'Completed'), ('missed', 'Missed')], default="scheduled")
