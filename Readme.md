@@ -235,4 +235,4 @@ here we'll build the page where we list all the participants. The url for this i
 First create the view in `apps/participants/views.py`
 Next create the url for this in `apps/participants/urls.py` then go to `config/urls.py` and include the participants app.
 Create a template. go to `apps/participants/templates/participants` and create the file `list.html` and write your template code.
-Finally add the link in the study's detail page so that whenever we click on a study, it should go to this view. Go to `apps/studies/templates/studies/detail.html` and add the link in the appropriate part. "Step 5 — Add Link From Study Page"
+Finally add the link in the study's detail page so that whenever we click on a study, it should go to this view. Go to `apps/studies/templates/studies/detail.html` and add the link in the appropriate part.
