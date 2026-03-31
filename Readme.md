@@ -230,9 +230,18 @@ Next we'll create the template for the study detail. Create `studies/templates/s
 here we'll add the functionality to search for studies. Go to `studies/views.py` and modify the `study_dashboard` view.
 Next add the search icon and create a form in `studies/templates/studies/dashboard.html`
 
-## Building participant list
+## Building participant list page
 here we'll build the page where we list all the participants. The url for this is `/studies/<study_id>/participants`.
 First create the view in `apps/participants/views.py`
 Next create the url for this in `apps/participants/urls.py` then go to `config/urls.py` and include the participants app.
 Create a template. go to `apps/participants/templates/participants` and create the file `list.html` and write your template code.
 Finally add the link in the study's detail page so that whenever we click on a study, it should go to this view. Go to `apps/studies/templates/studies/detail.html` and add the link in the appropriate part.
+
+## Displaying visits of a participant
+here we'll display the visit information of a participant given their id. First create the view in `apps/participants/views.py`. Then create a new url in `apps/participants/urls.py`. Create a new template `apps/participants/templates/participants/visit_detail.html`. Finally, add the url to this page in `apps\participants\templates\participants\list.html`. We add that there as it makes sense to view the visit details of a participant from the detail's page.
+
+## Deviation reason
+This is a small but helpful feature. If the actual date, the participant arrives for test, lies outside the window range (ie actual_date > window_end or actual_date < window_start>) then the doctor must be able to give a reason for that as text. To do this add a texfield `deviation_reason` in `apps/participants/models.py` for the `visit` model. In the view `visit_detail` from `apps\participants\views.py`, update the code to accept devation reason. Here we'll also add the logic wherein if the visit date is outside window start and window end and the user hasn't given a deviation reason then we'll return an error message. Next we update the template `apps\participants\templates\participants\visit_detail.html` for displaying the deviation reason and the error message.
+
+# Building forms
+now we'll build the forms where we'll collect the data from the participants. Here we'll basically provide the doctors an ui, where they can fill ou

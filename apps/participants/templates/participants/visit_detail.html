@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Visit Detail</h2>
+
+<!--show alert as error if error is present-->
+{% if error %}
+<div class="alert alert-danger">
+    {{ error }}
+</div>
+{% endif %}
+
+<div class="card p-3">
+    <p><strong>Participant:</strong> {{ visit.participant.participant_code }}</p>
+    <p><strong>Visit Type:</strong> {{ visit.visit_code }}</p>
+
+    <hr>
+
+    <p><strong>Due Date:</strong> {{ visit.due_date }}</p>
+    <p><strong>Window:</strong> {{ visit.window_start }} -> {{ visit.window_end }}</p>
+
+    <p>
+        <strong>Status:</strong>
+        {% if visit.status == "completed" %}
+            <span class="badge bg-success">Completed</span>
+        {% elif visit.status == "scheduled" %}
+            <span class="badge bg-warning">Scheduled</span>
+        {% else %}
+            <span class="badge bg-danger">Missed</span>
+        {% endif %}
+    </p>
+    <p>
+        <strong>Actual Date:</strong>
+        {{ visit.actual_date|default:"Not completed" }}
+    </p>
+        <!--show the deviation reason-->
+        {% if visit.deviation_reason %}
+        <p><strong>Deviation:</strong> {{ visit.deviation_reason }}</p>
+        {% endif %}
+</div>
+
+<hr>
+
+{% if visit.status != "completed" %}
+
+<h4>Mark as Completed</h4>
+
+<!--the form which contains the date field so that we can add the visit date -->
+<form method="POST">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Actual Visit Date</label>
+        <input type="date" name="actual_date" class="form-control" required>
+        <label class="form-label">Deviation Reason (if outside window)</label>
+        <!--textarea to enter a deviation reason-->
+        <textarea name="deviation_reason" class="form-control"></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Mark Completed</button>
+</form>
+{% endif %}
+
+{% endblock %}

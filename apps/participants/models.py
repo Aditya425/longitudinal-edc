@@ -35,6 +35,8 @@ class Visit(models.Model):
     #window_before and window_after. This is the date not days
     window_start = models.DateField(null=True)
     window_end = models.DateField(null=True)
+    #if the participant arrives late, after the window_end (ie actual_date > window_end) or if the participant arrives early (ie actual_date < window_start) then the doctor must be able to give a reason as text. This field signifies that
+    deviation_reason = models.TextField(blank=True, null=True)
     #the status of the visit
     #scheduled: planned but not done yet, completed: participant has visited (actual_date != NULL), missed: window has passed (current date > window_end)
     status = models.CharField(max_length=20, choices=[('scheduled', 'Scheduled'), ('completed', 'Completed'), ('missed', 'Missed')], default="scheduled")
