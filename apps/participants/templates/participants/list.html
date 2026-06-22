@@ -26,8 +26,10 @@
         <tr>
             <td colspan="4">No participants yet</td>
         </tr>
+        {% if participant.visit %}
+            <a href="{% url 'visit_detail' participant.visits.id %}">Open Visit</a> <!--error is that participant.visits.id is null-->
+        {% endif %}
         {% endfor %}
-        <a href="{% url 'visit_detail' visit.id %}">Open Visit</a>
     </tbody>
 </table>
 {% endblock %}

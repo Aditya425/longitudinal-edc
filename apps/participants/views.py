@@ -1,15 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from apps.studies.models import Study
+from apps.forms.models import FormTemplate
 from .models import Participant, Visit
 from datetime import datetime
 
 # Create your views here.
-def participants_list(request, study_id):
-    #get the study object from the study id
-    study = get_object_or_404(Study, id=study_id)
-    #get the participants related to the study
-    participants = Participant.objects.filter(study=study).order_by('participant_code')
-    return render(request, 'participants/list.html', {'study': study, 'participants': participants})
+# def participants_list(request, study_id):
+#     #get the study object from the study id
+#     study = get_object_or_404(Study, id=study_id)
+#     #get the participants related to the study
+#     participants = Participant.objects.filter(study=study).order_by('participant_code')
+#     return render(request, 'participants/list.html', {'study': study, 'participants': participants})
 
 def visit_detail(request, visit_id):
     visit = get_object_or_404(Visit, id=visit_id)
@@ -38,5 +39,45 @@ def visit_detail(request, visit_id):
             if not error:
                 visit.save()
                 return redirect("visit_detail", visit.id)
+    
+    templates = FormTemplate.objects.all()
     #send the visit and error (if any) back to visit detail page
-    return render(request, 'participants/visit_detail.html', {'visit': visit, 'error': error})
+    return render(request, 'participants/visit_detail.html', {'visit': visit, 'error': error, 'templates': templates})
+
+# def add_participant(request, study_id):
+#     #get the study
+#     study = get_object_or_404(Study, id=study_id)
+
+#     error = None
+
+#     if request.method == "POST":
+#         participant_code = request.POST.get("participant_code")
+#         birth_year = request.POST.get("birth_year")
+#         sex = request.POST.get("sex")
+#         enrolled_at = request.POST.get("enrolled_at")
+
+#         # Basic validation. Both of these are compulsory
+#         if not participant_code or not enrolled_at:
+#             error = "Participant code and enrolled date are required."
+
+#         else:
+#             participant = Participant.objects.create(
+#                 study=study,
+#                 participant_code=participant_code,
+#                 birth_year=birth_year if birth_year else None,
+#                 sex=sex,
+#                 enrolled_at=enrolled_at
+#             )
+
+#             # OPTIONAL:
+#             # schedule_visits_for_participant(participant)
+
+#             return redirect(
+#                 "study_detail",
+#                 pk=study.id
+#             )
+
+#     return render(request, "participants/add.html", {
+#         "study": study,
+#         "error": error
+#     })

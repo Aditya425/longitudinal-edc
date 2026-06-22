@@ -2,14 +2,19 @@
 {% block title %}Study Detail {% endblock %}
 
 {% block content %}
+<a href="{% url 'study_dashboard' %}" class="btn btn-secondary mb-3">
+        ← Back
+</a>
 <h2>{{ study.name }}</h2>
 <p><strong>Protocol ID:</strong> {{ study.protocol_id }}</p>
 <p><strong>Description:</strong> {{ study.description }}</p>
 
 <!--the link which will take us to participants list-->
-<a href="{% url 'participants_list' study.id %}" class="btn btn-primary">
+{% comment %}
+<!-- <a href="{% url 'participants_list' study.id %}" class="btn btn-primary">
     View Participants
-</a>
+</a> -->
+{% endcomment %}
 
 <hr>
 <!--Displaying participant details as a table-->
@@ -35,5 +40,7 @@
         {% endfor %}
     </tbody>
 </table>
-
+<a href="{% url 'add_participant' study.id %}" class="btn btn-success">
+    Add New Participant
+</a>
 {% endblock %}

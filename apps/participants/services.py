@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 from .models import Visit
 
 #this function takes in a participant and the visit details of the participant, then it schedules it on those days.
@@ -6,6 +6,9 @@ from .models import Visit
 def schedule_visits_for_participant(participant, visit_defs):
     #the baseline date of the participant which is when they enroll
     baseline_date = participant.enrolled_at
+    if isinstance(baseline_date, str):
+        #here we'll format the date using user's locale. This is because we write dates differently in other countries. 'mm/dd/yyyy' in US and 'dd/mm/yyyy' in UK
+        baseline_date = datetime.strptime(baseline_date, "%Y-%m-%d")
     #is participant is already scheduled then dont continue
     if participant.visits.exists():
         return

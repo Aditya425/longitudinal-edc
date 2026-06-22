@@ -222,6 +222,11 @@ Next we'll create the template. First create the folder called `templates` in st
 Next we'll create a folder which'll contain common html files of our project. Create a folder called `templates` in project root. In `settings.py`, go to `TEMPLATES` and in `DIRS` add the location of the `templates` folder.
 Now, inside `templates`, create the file `base.html`. Here we'll add the bootstrap config, navbar and the main page content.
 
+## Creating a study
+Now we'll add code to create a study. Go to `apps\studies\views.py` and create a view which will get the details of the study from the user and create a Study object.
+Add the url for the view in `apps\studies\urls.py`. Create a template in `apps\studies\templates\studies\create.html`
+Now create a link in `apps\studies\templates\studies\dashboard.html` to this page
+
 ## Study Detail Page
 when you click on a study, you get the details of that study. First go to `studies/views.py` and add the view. Next go to `studies/urls.py` and add the url for the view you created. Next go to `studies/templates/dashboard.html` and update it so that it goes to a particular study.
 Next we'll create the template for the study detail. Create `studies/templates/studies/detail.html` and write your template
@@ -230,8 +235,13 @@ Next we'll create the template for the study detail. Create `studies/templates/s
 here we'll add the functionality to search for studies. Go to `studies/views.py` and modify the `study_dashboard` view.
 Next add the search icon and create a form in `studies/templates/studies/dashboard.html`
 
-## Building participant list page
-here we'll build the page where we list all the participants. The url for this is `/studies/<study_id>/participants`.
+## Adding participants to a study
+We'll make it such that when a user goes to a study detail, we can add a participant from there
+We already have study_detail page. We need to add a button for new participant. Go to `apps\studies\templates\studies\detail.html` and add that button. Here we'll be sending the study_id as a url param. Next add the url in `apps\studies\urls.py`.
+Create a view `add_participant()` in `apps\studies\views.py`. Next create the template in `apps\studies\templates\studies\add_participant.html`
+
+## Seeing participants of a study
+here we'll build the page where we list all the participants for a study.
 First create the view in `apps/participants/views.py`
 Next create the url for this in `apps/participants/urls.py` then go to `config/urls.py` and include the participants app.
 Create a template. go to `apps/participants/templates/participants` and create the file `list.html` and write your template code.
@@ -244,4 +254,38 @@ here we'll display the visit information of a participant given their id. First 
 This is a small but helpful feature. If the actual date, the participant arrives for test, lies outside the window range (ie actual_date > window_end or actual_date < window_start>) then the doctor must be able to give a reason for that as text. To do this add a texfield `deviation_reason` in `apps/participants/models.py` for the `visit` model. In the view `visit_detail` from `apps\participants\views.py`, update the code to accept devation reason. Here we'll also add the logic wherein if the visit date is outside window start and window end and the user hasn't given a deviation reason then we'll return an error message. Next we update the template `apps\participants\templates\participants\visit_detail.html` for displaying the deviation reason and the error message.
 
 # Building forms
-now we'll build the forms where we'll collect the data from the participants. Here we'll basically provide the doctors an ui, where they can fill ou
+now we'll build the forms where we'll collect the data from the participants. Here we'll basically provide the doctors an ui, where they can fill out the information from the patients. This is the core of this project. First we need to build the model for the form. Go to `apps\forms\models.py` and create the model. After creating the models, run the migrations.
+Next register FormTemplate model to the django admin using `apps\forms\admin.py`. Now open the django admin panel and you can view the FormTemplate form
+We're basically building the system like this:
+1. First we register the FormTemplate to the admin so that it shows up as a form in the django admin page
+2. The doctor (also the admin of this page) fills up the "FormTemplate" form in the django admin. Basically he designs the actual forms for the participant. After filling up the form, he clicks and it'll be saved into db
+3. When we want to render the participant form, we'll use the FormTemplate form stored on to the db (in step 2) and render the participant form.
+
+## Defining the form
+Go to django admin panel -> login-> click on `Add` button near FormTemplate and fill these details:
+```
+Name: Baseline Intake
+Schema json: {
+  "fields": [
+    {"name": "age", "label": "Age", "type": "number"},
+    {"name": "weight", "label": "Weight", "type": "number"},
+    {"name": "notes", "label": "Notes", "type": "text"}
+  ]
+}
+Version: 1
+```
+and save it. These are saved in FormTemplate table in db
+
+## Show forms on visit page
+here we'll write code to show the form name from the FormTemplate table. Note that we only show the names with link of the forms which are available. This is done so that a doctor can go to a visit and go to the forms they can use
+Go to `apps\participants\views.py`and update the view `visit_detail`
+Next, go to `apps\participants\templates\participants\visit_detail.html` and display the form names with the links to the forms.
+Next, we'll write code to display the actual form. Go to `apps\forms\views.py` and create a view which will direct to the template where we'll display the form.
+Next, create a url for this in `apps/forms/urls.py` and register this url in `config\urls.py`.
+Next, create the template in `apps\forms\templates\forms\fill_form.html` and add the template
+"Step 4 — Create Template"
+
+## Steps to login to postgresql db
+1. open an ubuntu terminal and type `docker compose exec db bash`
+2. in the bash enter `psql -h <host/container> -p <port-no> -U <username> -d <dbname>` in this case the command is `psql -h db -p 5432 -U appuser -d appdb`. Enter the password after pressing enter
+3. Now you've logged into postgres. type `\l` to list all dbs. type `\c <dbname>` to connect to a db, in this case `\c appdb`. Type `\dt` to list all tables

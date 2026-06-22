@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<a href="{% url 'study_detail' study.id %}" class="btn btn-secondary mb-3">
+        ← Back
+</a>
+
+{% if error %}
+<div class="alert alert-danger">
+    Participant already exists!
+</div>
+{% endif %}
+
+<h2>Add Participant to {{ study.name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="mb-3">
+        <label>Participant Code</label>
+        <input
+            type="text"
+            name="participant_code"
+            class="form-control"
+            required
+        >
+    </div>
+
+    <div class="mb-3">
+        <label>Birth Year</label>
+        <input
+            type="number"
+            name="birth_year"
+            class="form-control"
+        >
+    </div>
+
+    <div class="mb-3">
+        <label>Sex</label>
+        <select name="sex" class="form-control">
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+            <option value="O">Other</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Enrolled At</label>
+        <input
+            type="date"
+            name="enrolled_at"
+            class="form-control"
+            required
+        >
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Add Participant
+    </button>
+
+</form>
+
+{% endblock %}

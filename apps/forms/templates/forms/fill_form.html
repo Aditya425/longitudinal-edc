@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>{{ template.name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <!--rendering a different ui element for different -->
+    {% for field in schema %}
+        <div class="mb-3">
+            <label class="form-label">
+                {{ field.label }}
+            </label>
+
+            {% if field.type == "number" %}
+                <input type="number" name="{{ field.name }}" class="form-control">
+            
+            {% elif field.type == "text" %}
+                <textarea name="{{ field.name }}" class="form-control"></textarea>
+            {% else %}
+                <input type="text" name="{{ field.name }}" class="form-control">
+            {% endif %}
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

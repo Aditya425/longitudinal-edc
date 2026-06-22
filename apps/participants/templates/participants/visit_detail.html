@@ -60,4 +60,20 @@
 </form>
 {% endif %}
 
+<hr>
+
+<h4>Forms</h4>
+
+<ul>
+    {% for template in templates %}
+    <li>
+        <!--This links to the page where we display and fill the form-->
+        <!-- we need visit_id so that we can connect the visit of the user to the form filled by the user. -->
+        <!-- we need template_id to fetch the actual form from FormTemplate -->
+        <a href="{% url 'fill_form' visit.id template.id %}">
+            Fill {{ template.name }}
+        </a>
+    </li>
+</ul>
+
 {% endblock %}
