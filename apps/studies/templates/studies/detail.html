@@ -1,46 +1,90 @@
 {% extends 'base.html' %}
-{% block title %}Study Detail {% endblock %}
-
+{% block title %}Study Detail{% endblock %}
 {% block content %}
-<a href="{% url 'study_dashboard' %}" class="btn btn-secondary mb-3">
-        ← Back
-</a>
-<h2>{{ study.name }}</h2>
-<p><strong>Protocol ID:</strong> {{ study.protocol_id }}</p>
-<p><strong>Description:</strong> {{ study.description }}</p>
+<a href="{% url 'study_dashboard' %}" class="btn btn-secondary mb-3">&larr; Back</a>
 
-<!--the link which will take us to participants list-->
-{% comment %}
-<!-- <a href="{% url 'participants_list' study.id %}" class="btn btn-primary">
-    View Participants
-</a> -->
-{% endcomment %}
+<div class="card p-3 mb-3">
+    <div class="d-flex justify-content-between">
+        <div>
+            <h2>{{ study.name }}</h2>
+            <p><strong>Protocol ID:</strong> {{ study.protocol_id }}</p>
+            <p><strong>Description:</strong> {{ study.description|default:"None" }}</p>
+        </div>
+        <div>
+            <a href="{% url 'edit_study' study.id %}" class="btn btn-outline-primary btn-sm">Edit</a>
+            <a href="{% url 'delete_study' study.id %}" class="btn btn-outline-danger btn-sm">Delete</a>
+        </div>
+    </div>
+</div>
+
+{% if visit_types %}
+<div class="card p-3 mb-3">
+    <h5>Visit Schedule</h5>
+    <table class="table table-sm">
+        <thead>
+            <tr><th>Visit</th><th>Target Day</th><th>Window Before</th><th>Window After</th><th>Required</th></tr>
+        </thead>
+        <tbody>
+            {% for vt in visit_types %}
+            <tr>
+                <td>{{ vt.visit_code }}</td>
+                <td>Day {{ vt.target_day }}</td>
+                <td>{{ vt.window_before }} days</td>
+                <td>{{ vt.window_after }} days</td>
+                <td>{% if vt.required %}Yes{% else %}No{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
 
 <hr>
-<!--Displaying participant details as a table-->
 <h4>Participants</h4>
+<div class="d-flex justify-content-between mb-2">
+    <a href="{% url 'participants_list' study.id %}" class="btn btn-info btn-sm">View All Participants</a>
+    <a href="{% url 'add_participant' study.id %}" class="btn btn-success btn-sm">+ Add Participant</a>
+</div>
 
 <table class="table table-bordered">
     <thead>
         <tr>
             <th>Participant Code</th>
             <th>Enrolled</th>
+            <th>Visits</th>
+            <th>Completed</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-        {% for participant in participants %}
+        {% for participant in page_obj %}
         <tr>
             <td>{{ participant.participant_code }}</td>
             <td>{{ participant.enrolled_at }}</td>
+            <td>{{ participant.visit_count }}</td>
+            <td>{{ participant.completed_visits }}</td>
+            <td>
+                <a href="{% url 'edit_participant' study.id participant.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                <a href="{% url 'delete_participant' study.id participant.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+            </td>
         </tr>
         {% empty %}
-        <tr>
-            <td colspan="2">No participants yet.</td>
-        </tr>
+        <tr><td colspan="5">No participants yet.</td></tr>
         {% endfor %}
     </tbody>
 </table>
-<a href="{% url 'add_participant' study.id %}" class="btn btn-success">
-    Add New Participant
-</a>
+
+{% if page_obj.has_other_pages %}
+<nav>
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}

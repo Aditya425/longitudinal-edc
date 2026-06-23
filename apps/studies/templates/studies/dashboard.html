@@ -1,66 +1,110 @@
 {% extends 'base.html' %}
+{% block title %}Study Dashboard{% endblock %}
 {% block content %}
-<!--using bootstrap for css-->
-<div class="container mt-4">
-    <!--Link to create new study-->
-    <a href="{% url 'create_study' %}" class="btn btn-success mb-3">+ New Study</a>
-    <h2>Study Dashboard</h2>
-    <!--search icon-->
+<div class="container mt-2">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Study Dashboard</h2>
+        <a href="{% url 'create_study' %}" class="btn btn-success">+ New Study</a>
+    </div>
+
+    <div class="row mb-3 g-2">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_studies }}</h5>
+                    <p class="card-text">Total Studies</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_participants }}</h5>
+                    <p class="card-text">Total Participants</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_overdue }}</h5>
+                    <p class="card-text">Overdue Visits</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <form method="get" class="mb-3">
         <div class="input-group">
-            <input type="text" name="q" class="form-control" placeholder="search studies..." value="{{ request.GET.q }}">
+            <input type="text" name="q" class="form-control" placeholder="Search studies..." value="{{ request.GET.q }}">
             <button class="btn btn-primary" type="submit">Search</button>
         </div>
     </form>
-    <table class="table-bordered table-hover mt-3">
-        <thead class="table-light">
-            <tr>
-                <th>Name</th>
-                <th>Protocol ID</th>
-                <th>Created</th>
-                <th>Participants</th>
-                <th>Total Visits</th>
-                <th>Completed</th>
-                <th>Completion %</th>
-                <th>Overdue</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!--looping through dashboard_data which we created earlier in "study_dashboard" method of views.py-->
-            {% for row in dashboard_data %}
-            <tr>
-                <td>
-                    <a href="{% url 'study_detail' row.study.id %}">{{ row.study.name }}</a>
-                </td>
-                <td>{{ row.study.protocol_id }}</td>
-                <td>{{ row.study.created_at|date:"Y-m-d" }}</td>
-                <td>{{ row.participants_count }}</td>
-                <td>{{ row.total_visits }}</td>
-                <td>{{ row.completed_visits }}</td>
-                <td>
-                    {% if row.completion_rate >= 80 %}
-                    <span class="badge bg-success">{{ row.completion_rate }}%</span>
-                    {% elif row.completion_rate >= 50 %}
-                    <span class="badge bg-warning text-dark">{{ row.completion_rate }}%</span>
-                    {% else %}
-                    <span class="badge bg-danger">{{ row.completion_rate }}%</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if row.overdue_visits > 0 %}
-                    <span class="badge bg-danger">{{ row.overdue_visits }}</span>
-                    {% else %}
-                    <span class="badge bg-success">0</span>
-                    {% endif %}
-                </td>
-            </tr>
-            <!--If dashboard_data is empty-->
-            {% empty %}
-            <tr>
-                <td colspan="7">No studies available.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Protocol ID</th>
+                    <th>Created</th>
+                    <th>Participants</th>
+                    <th>Total Visits</th>
+                    <th>Completed</th>
+                    <th>Completion %</th>
+                    <th>Overdue</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in page_obj %}
+                <tr>
+                    <td><a href="{% url 'study_detail' row.study.id %}">{{ row.study.name }}</a></td>
+                    <td>{{ row.study.protocol_id }}</td>
+                    <td>{{ row.study.created_at|date:"Y-m-d" }}</td>
+                    <td>{{ row.participant_count }}</td>
+                    <td>{{ row.total_visits }}</td>
+                    <td>{{ row.completed_visits }}</td>
+                    <td>
+                        {% if row.completion_rate >= 80 %}
+                            <span class="badge bg-success">{{ row.completion_rate }}%</span>
+                        {% elif row.completion_rate >= 50 %}
+                            <span class="badge bg-warning text-dark">{{ row.completion_rate }}%</span>
+                        {% else %}
+                            <span class="badge bg-danger">{{ row.completion_rate }}%</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.overdue_visits > 0 %}
+                            <span class="badge bg-danger">{{ row.overdue_visits }}</span>
+                        {% else %}
+                            <span class="badge bg-success">0</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'edit_study' row.study.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a href="{% url 'delete_study' row.study.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center">No studies available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <nav>
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Previous</a></li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
 {% endblock %}

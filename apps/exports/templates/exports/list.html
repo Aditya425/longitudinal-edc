@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Exports{% endblock %}
+{% block content %}
+<h2>Exports</h2>
+
+<div class="card p-3 mb-3">
+    <h5>Create New Export</h5>
+    <form method="post" action="{% url 'create_export' %}">
+        {% csrf_token %}
+        <div class="row g-2">
+            <div class="col-auto">
+                <select name="study_id" class="form-control">
+                    <option value="">All Studies</option>
+                    {% for s in studies %}
+                    <option value="{{ s.id }}">{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Start Export</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Created</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Completed</th>
+            <th>Error</th>
+            <th>Download</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for job in page_obj %}
+        <tr>
+            <td>{{ job.created_at|date:"Y-m-d H:i" }}</td>
+            <td>{{ job.export_type }}</td>
+            <td>
+                {% if job.status == "completed" %}
+                    <span class="badge bg-success">Completed</span>
+                {% elif job.status == "running" %}
+                    <span class="badge bg-info">Running</span>
+                {% elif job.status == "failed" %}
+                    <span class="badge bg-danger">Failed</span>
+                {% else %}
+                    <span class="badge bg-secondary">Pending</span>
+                {% endif %}
+            </td>
+            <td>{{ job.completed_at|date:"Y-m-d H:i"|default:"-" }}</td>
+            <td><small class="text-danger">{{ job.error_message|default:"" }}</small></td>
+            <td>
+                {% if job.status == "completed" and job.file_path %}
+                    <a href="{% url 'download_export' job.id %}" class="btn btn-sm btn-success">Download</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No exports yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if page_obj.has_other_pages %}
+<nav>
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

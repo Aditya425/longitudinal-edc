@@ -1,30 +1,51 @@
 {% extends "base.html" %}
-
+{% block title %}Create Study{% endblock %}
 {% block content %}
-
 <h2>Create Study</h2>
-
 <form method="post">
     {% csrf_token %}
-
     <div class="mb-3">
         <label class="form-label">Study Name</label>
-        <input type="text" name="name" class="form-control">
+        <input type="text" name="name" class="form-control" required>
     </div>
-
     <div class="mb-3">
         <label class="form-label">Protocol ID</label>
         <input type="text" name="protocol_id" class="form-control" required>
     </div>
-
     <div class="mb-3">
         <label class="form-label">Description</label>
         <textarea name="description" class="form-control"></textarea>
     </div>
 
-    <button class="btn btn-primary" type="submit">
-        Create Study
-    </button>
-</form>
+    <h5 class="mt-4">Visit Schedule Configuration</h5>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Baseline — Target Day</label>
+            <input type="number" name="baseline_target" value="0" class="form-control">
+            <div class="row mt-1">
+                <div class="col"><input type="number" name="baseline_before" value="0" class="form-control" placeholder="Before"></div>
+                <div class="col"><input type="number" name="baseline_after" value="0" class="form-control" placeholder="After"></div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Month 3 — Target Day</label>
+            <input type="number" name="month_3_target" value="90" class="form-control">
+            <div class="row mt-1">
+                <div class="col"><input type="number" name="month_3_before" value="14" class="form-control"></div>
+                <div class="col"><input type="number" name="month_3_after" value="21" class="form-control"></div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Year 1 — Target Day</label>
+            <input type="number" name="year_1_target" value="365" class="form-control">
+            <div class="row mt-1">
+                <div class="col"><input type="number" name="year_1_before" value="30" class="form-control"></div>
+                <div class="col"><input type="number" name="year_1_after" value="30" class="form-control"></div>
+            </div>
+        </div>
+    </div>
 
+    <button class="btn btn-primary" type="submit">Create Study</button>
+    <a href="{% url 'study_dashboard' %}" class="btn btn-secondary">Cancel</a>
+</form>
 {% endblock %}

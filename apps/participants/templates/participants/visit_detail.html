@@ -1,79 +1,79 @@
 {% extends "base.html" %}
-
+{% block title %}Visit Detail{% endblock %}
 {% block content %}
+<a href="{% url 'participants_list' visit.participant.study.id %}" class="btn btn-secondary mb-3">&larr; Back</a>
+
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
 
 <h2>Visit Detail</h2>
 
-<!--show alert as error if error is present-->
-{% if error %}
-<div class="alert alert-danger">
-    {{ error }}
-</div>
-{% endif %}
-
-<div class="card p-3">
+<div class="card p-3 mb-3">
     <p><strong>Participant:</strong> {{ visit.participant.participant_code }}</p>
-    <p><strong>Visit Type:</strong> {{ visit.visit_code }}</p>
-
-    <hr>
-
+    <p><strong>Visit Type:</strong> {{ visit.get_visit_code_display }}</p>
     <p><strong>Due Date:</strong> {{ visit.due_date }}</p>
-    <p><strong>Window:</strong> {{ visit.window_start }} -> {{ visit.window_end }}</p>
-
+    <p><strong>Window:</strong> {{ visit.window_start }} → {{ visit.window_end }}</p>
     <p>
         <strong>Status:</strong>
         {% if visit.status == "completed" %}
             <span class="badge bg-success">Completed</span>
         {% elif visit.status == "scheduled" %}
-            <span class="badge bg-warning">Scheduled</span>
+            <span class="badge bg-warning text-dark">Scheduled</span>
         {% else %}
             <span class="badge bg-danger">Missed</span>
         {% endif %}
     </p>
-    <p>
-        <strong>Actual Date:</strong>
-        {{ visit.actual_date|default:"Not completed" }}
-    </p>
-        <!--show the deviation reason-->
-        {% if visit.deviation_reason %}
+    <p><strong>Actual Date:</strong> {{ visit.actual_date|default:"Not completed" }}</p>
+    {% if visit.deviation_reason %}
         <p><strong>Deviation:</strong> {{ visit.deviation_reason }}</p>
-        {% endif %}
+    {% endif %}
+    {% if visit.deviation %}
+        <p><strong>Deviation (structured):</strong> {{ visit.deviation.reason }} <small class="text-muted">— by {{ visit.deviation.created_by|default:"unknown" }} at {{ visit.deviation.created_at|date:"Y-m-d H:i" }}</small></p>
+    {% endif %}
 </div>
 
-<hr>
-
 {% if visit.status != "completed" %}
-
 <h4>Mark as Completed</h4>
-
-<!--the form which contains the date field so that we can add the visit date -->
 <form method="POST">
     {% csrf_token %}
     <div class="mb-3">
         <label class="form-label">Actual Visit Date</label>
         <input type="date" name="actual_date" class="form-control" required>
-        <label class="form-label">Deviation Reason (if outside window)</label>
-        <!--textarea to enter a deviation reason-->
-        <textarea name="deviation_reason" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Deviation Reason (required if outside window)</label>
+        <textarea name="deviation_reason" class="form-control" rows="2"></textarea>
     </div>
     <button type="submit" class="btn btn-success">Mark Completed</button>
 </form>
 {% endif %}
 
 <hr>
-
 <h4>Forms</h4>
-
-<ul>
+<ul class="list-group mb-3">
     {% for template in templates %}
-    <li>
-        <!--This links to the page where we display and fill the form-->
-        <!-- we need visit_id so that we can connect the visit of the user to the form filled by the user. -->
-        <!-- we need template_id to fetch the actual form from FormTemplate -->
-        <a href="{% url 'fill_form' visit.id template.id %}">
-            Fill {{ template.name }}
-        </a>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ template.name }}
+        <div>
+            <a href="{% url 'fill_form' visit.id template.id %}" class="btn btn-sm btn-primary">Fill</a>
+        </div>
     </li>
+    {% empty %}
+    <li class="list-group-item">No forms available.</li>
+    {% endfor %}
 </ul>
 
+{% if existing_forms %}
+<h5>Submitted Forms</h5>
+<ul class="list-group">
+    {% for form in existing_forms %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ form.template.name }} (v{{ form.version }})
+        <span class="text-muted small">{{ form.completed_at|date:"Y-m-d H:i" }}</span>
+        <a href="{% url 'view_form_response' form.id %}" class="btn btn-sm btn-outline-info">View</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
 {% endblock %}

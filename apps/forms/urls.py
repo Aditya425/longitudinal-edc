@@ -1,7 +1,7 @@
 from django.urls import path
-from apps.forms.views import fill_form
+from . import views
 
 urlpatterns = [
-    # path("visits/<int:visit_id>/forms/<int:template_id>", fill_form, name="fill_form")
-    path("forms/<int:template_id>", fill_form, name="fill_form")
+    path("<int:visit_id>/<int:template_id>/", views.fill_form, name="fill_form"),
+    path("responses/<int:response_id>/", views.view_form_response, name="view_form_response"),
 ]

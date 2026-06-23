@@ -289,3 +289,6 @@ Next, create the template in `apps\forms\templates\forms\fill_form.html` and add
 1. open an ubuntu terminal and type `docker compose exec db bash`
 2. in the bash enter `psql -h <host/container> -p <port-no> -U <username> -d <dbname>` in this case the command is `psql -h db -p 5432 -U appuser -d appdb`. Enter the password after pressing enter
 3. Now you've logged into postgres. type `\l` to list all dbs. type `\c <dbname>` to connect to a db, in this case `\c appdb`. Type `\dt` to list all tables
+
+##  Study Setup — Visit Types / Windows from DB
+Previously, visit definition was hardcoded in `apps/participants/protocol.py`

@@ -1,8 +1,30 @@
 {% extends 'base.html' %}
 {% block title %}Participants{% endblock %}
 {% block content %}
+<a href="{% url 'study_detail' study.id %}" class="btn btn-secondary mb-3">&larr; Back to Study</a>
+<h2>Participants — {{ study.name }}</h2>
 
-<h2>Participants - {{ study.name }}</h2>
+<form method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col-md-5">
+            <input type="text" name="q" class="form-control" placeholder="Search by participant code..." value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-control">
+                <option value="">All Statuses</option>
+                <option value="scheduled" {% if request.GET.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="missed" {% if request.GET.status == 'missed' %}selected{% endif %}>Missed</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100" type="submit">Filter</button>
+        </div>
+        <div class="col-md-2">
+            <a href="{% url 'participants_list' study.id %}" class="btn btn-outline-secondary w-100">Clear</a>
+        </div>
+    </div>
+</form>
 
 <table class="table table-striped">
     <thead>
@@ -11,25 +33,45 @@
             <th>Birth Year</th>
             <th>Sex</th>
             <th>Enrolled At</th>
+            <th>Actions</th>
         </tr>
     </thead>
-
     <tbody>
-        {% for participant in participants %}
+        {% for participant in page_obj %}
         <tr>
-            <td>{{ participant.participant_code }}</td>
-            <td>{{ participant.birth_year }}</td>
-            <td>{{ participant.sex }}</td>
+            <td>
+                <a href="{% url 'participants_list' study.id %}?q={{ participant.participant_code }}">
+                    {{ participant.participant_code }}
+                </a>
+            </td>
+            <td>{{ participant.birth_year|default:"-" }}</td>
+            <td>{{ participant.get_sex_display }}</td>
             <td>{{ participant.enrolled_at }}</td>
+            <td>
+                <a href="{% url 'edit_participant' study.id participant.id %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                <a href="{% url 'delete_participant' study.id participant.id %}" class="btn btn-sm btn-outline-danger">Del</a>
+                {% if participant.visits.exists %}
+                    <a href="{% url 'visit_detail' participant.visits.first.id %}" class="btn btn-sm btn-outline-info">Visits</a>
+                {% endif %}
+            </td>
         </tr>
         {% empty %}
-        <tr>
-            <td colspan="4">No participants yet</td>
-        </tr>
-        {% if participant.visit %}
-            <a href="{% url 'visit_detail' participant.visits.id %}">Open Visit</a> <!--error is that participant.visits.id is null-->
-        {% endif %}
+        <tr><td colspan="5">No participants found.</td></tr>
         {% endfor %}
     </tbody>
 </table>
+
+{% if page_obj.has_other_pages %}
+<nav>
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Previous</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Next</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}

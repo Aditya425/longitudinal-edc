@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Edit Study{% endblock %}
+{% block content %}
+<a href="{% url 'study_detail' study.id %}" class="btn btn-secondary mb-3">&larr; Back</a>
+<h2>Edit Study</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Study Name</label>
+        <input type="text" name="name" value="{{ study.name }}" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Protocol ID</label>
+        <input type="text" name="protocol_id" value="{{ study.protocol_id }}" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control">{{ study.description }}</textarea>
+    </div>
+
+    <h5 class="mt-4">Visit Schedule</h5>
+    <div class="row">
+        {% for vt in study.visit_types.all %}
+        <div class="col-md-4 mb-3">
+            <label class="form-label">{{ vt.visit_code|title }} — Target Day</label>
+            <input type="number" name="{{ vt.visit_code }}_target" value="{{ vt.target_day }}" class="form-control">
+            <div class="row mt-1">
+                <div class="col"><input type="number" name="{{ vt.visit_code }}_before" value="{{ vt.window_before }}" class="form-control" placeholder="Before"></div>
+                <div class="col"><input type="number" name="{{ vt.visit_code }}_after" value="{{ vt.window_after }}" class="form-control" placeholder="After"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save Changes</button>
+    <a href="{% url 'study_detail' study.id %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

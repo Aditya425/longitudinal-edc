@@ -1,6 +1,9 @@
 from django.db import models
+from django.contrib.auth import get_user_model
 
-# Create your models here.
+User = get_user_model()
+
+
 class ExportJob(models.Model):
     STATUS_CHOICES = [
         ("pending", "Pending"),
@@ -8,12 +11,12 @@ class ExportJob(models.Model):
         ("completed", "Completed"),
         ("failed", "Failed")
     ]
-    #a fixed set of allowed states for a export job
+    export_type = models.CharField(max_length=50, default="visits")
+    study = models.ForeignKey("studies.Study", on_delete=models.CASCADE, null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
-    #when the job was created
     created_at = models.DateTimeField(auto_now_add=True)
-    #when the job is completed (success or failure)
     completed_at = models.DateTimeField(null=True, blank=True)
-    #a human readable message as to why the job failed (if there is failure)
+    file_path = models.CharField(max_length=500, blank=True)
     error_message = models.TextField(blank=True)
 

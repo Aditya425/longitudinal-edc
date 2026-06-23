@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load study_extras %}
+{% block title %}View Form{% endblock %}
+{% block content %}
+<a href="{% url 'visit_detail' response.visit.id %}" class="btn btn-secondary mb-3">&larr; Back to Visit</a>
+
+<div class="card">
+    <div class="card-header">
+        <h4>{{ response.template.name }}</h4>
+        <small class="text-muted">Submitted {{ response.completed_at|date:"Y-m-d H:i" }} by {{ response.completed_by|default:"unknown" }} (v{{ response.version }})</small>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead><tr><th>Field</th><th>Value</th></tr></thead>
+            <tbody>
+                {% for field_name, value in response.answers_json.items %}
+                <tr>
+                    <td>{{ field_labels|default:field_name|get_item:field_name|default:field_name }}</td>
+                    <td>
+                        {% if value is True %}Yes{% elif value is False %}No{% else %}{{ value|default:"-" }}{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<a href="{% url 'fill_form' response.visit.id response.template.id %}" class="btn btn-primary mt-2">Edit</a>
+{% endblock %}

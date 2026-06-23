@@ -1,28 +1,53 @@
 {% extends "base.html" %}
-
+{% load study_extras %}
+{% block title %}Fill Form{% endblock %}
 {% block content %}
+<a href="{% url 'visit_detail' visit.id %}" class="btn btn-secondary mb-3">&larr; Back to Visit</a>
 
 <h2>{{ template.name }}</h2>
+{% if existing %}
+<div class="alert alert-info">Editing existing submission from {{ existing.completed_at|date:"Y-m-d H:i" }}.</div>
+{% endif %}
 
 <form method="post">
     {% csrf_token %}
-    <!--rendering a different ui element for different -->
     {% for field in schema %}
-        <div class="mb-3">
-            <label class="form-label">
-                {{ field.label }}
-            </label>
+    <div class="mb-3">
+        <label class="form-label">
+            {{ field.label }}
+            {% if field.required %}<span class="text-danger">*</span>{% endif %}
+        </label>
 
-            {% if field.type == "number" %}
-                <input type="number" name="{{ field.name }}" class="form-control">
-            
-            {% elif field.type == "text" %}
-                <textarea name="{{ field.name }}" class="form-control"></textarea>
-            {% else %}
-                <input type="text" name="{{ field.name }}" class="form-control">
-            {% endif %}
-        </div>
+        {% if field.type == "number" %}
+            <input type="number" name="{{ field.name }}" class="form-control" value="{{ initial|default:''|get_item:field.name }}" {% if field.required %}required{% endif %}>
+
+        {% elif field.type == "text" %}
+            <textarea name="{{ field.name }}" class="form-control" {% if field.required %}required{% endif %}>{{ initial|default:''|get_item:field.name }}</textarea>
+
+        {% elif field.type == "select" and field.options %}
+            <select name="{{ field.name }}" class="form-control" {% if field.required %}required{% endif %}>
+                <option value="">-- Select --</option>
+                {% for opt in field.options %}
+                <option value="{{ opt }}" {% if initial|default:''|get_item:field.name == opt %}selected{% endif %}>{{ opt }}</option>
+                {% endfor %}
+            </select>
+
+        {% elif field.type == "checkbox" %}
+            <div class="form-check">
+                <input type="checkbox" name="{{ field.name }}" class="form-check-input" id="{{ field.name }}" {% if initial|default:''|get_item:field.name %}checked{% endif %}>
+                <label class="form-check-label" for="{{ field.name }}">{{ field.label }}</label>
+            </div>
+
+        {% elif field.type == "date" %}
+            <input type="date" name="{{ field.name }}" class="form-control" value="{{ initial|default:''|get_item:field.name }}" {% if field.required %}required{% endif %}>
+
+        {% else %}
+            <input type="text" name="{{ field.name }}" class="form-control" value="{{ initial|default:''|get_item:field.name }}" {% if field.required %}required{% endif %}>
+        {% endif %}
+    </div>
     {% endfor %}
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary">
+        {% if existing %}Update{% else %}Submit{% endif %}
+    </button>
 </form>
 {% endblock %}

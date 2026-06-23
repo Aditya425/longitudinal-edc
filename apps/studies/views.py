@@ -1,60 +1,79 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.db.utils import IntegrityError
-from django.http import HttpResponse
-from .models import Study
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.contrib import messages
+
+from .models import Study, VisitType
 from apps.participants.models import Visit, Participant
 
-# Create your views here.
 
-#shows all the studies
 def study_dashboard(request):
-    #get the queryset of all the studies in descending order of created_at
     studies = Study.objects.all().order_by("-created_at")
 
-    #get the search query from the GET url. the query will be "<url>?q=<search-term>"
     query = request.GET.get('q')
-    #filter the studies list above to match the query only if query is not an empty string
     if query:
-        #search for the rows whose name contains <query>
         studies = studies.filter(name__icontains=query)
-    #it contains a list of dictionaries where each dictionary represents a study
+
     dashboard_data = []
+    total_participants = 0
+    total_overdue = 0
 
     for study in studies:
-        #the count of all the participants under the current study
         participants_count = study.participants.count()
-        #here we're calculating the number of rows in visit where the participant has registered for the current study object, in other words, the number of visits by a participant to our clinic where the participant has registered for the current study (which is the current study object 'study')
-        #for this we've to filter on visits where the participant's study (in participant table) is equal to study (the current object in for loop)
+        total_participants += participants_count
         total_visits = Visit.objects.filter(participant__study=study).count()
-        #of the total visits, how many of them are completed. This variable counts that
         completed_visits = Visit.objects.filter(participant__study=study, status="completed").count()
-        #completion percentage
         completion_rate = None
         if total_visits > 0:
             completion_rate = round((completed_visits / total_visits) * 100, 1)
-
-        #calculating no. of overdue visits. If a visit's status is "scheduled" and current date is greater than the window_end date then it means that the visit is overdue
-        overdue_visits = Visit.objects.filter(status="scheduled",window_end__lt=timezone.now().date()).count()
-        
-        #create a dict of this data and append to our list
+        overdue_visits = Visit.objects.filter(
+            status="scheduled", window_end__lt=timezone.now().date(),
+            participant__study=study
+        ).count()
+        total_overdue += overdue_visits
         dashboard_data.append({
             "study": study,
             "participant_count": participants_count,
             "total_visits": total_visits,
             "completed_visits": completed_visits,
             "completion_rate": completion_rate,
-            "overdue_visits": overdue_visits
+            "overdue_visits": overdue_visits,
         })
 
-    return render(request, "studies/dashboard.html", {"dashboard_data": dashboard_data})
+    paginator = Paginator(dashboard_data, 10)
+    page = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page)
+
+    return render(request, "studies/dashboard.html", {
+        "page_obj": page_obj,
+        "total_studies": Study.objects.count(),
+        "total_participants": total_participants,
+        "total_overdue": total_overdue,
+    })
+
 
 def study_detail(request, study_id):
-    #pk is the primary key of the study clicked by the user
     study = get_object_or_404(Study, pk=study_id)
-    #get all the participants for this study
-    participants = study.participants.all()
-    return render(request, 'studies/detail.html', {"study": study, "participants": participants})
+    participants = study.participants.all().order_by("participant_code")
+
+    paginator = Paginator(participants, 20)
+    page = request.GET.get("page", 1)
+    page_obj = paginator.get_page(page)
+
+    visit_types = study.visit_types.all()
+
+    for p in page_obj:
+        p.visit_count = p.visits.count()
+        p.completed_visits = p.visits.filter(status="completed").count()
+
+    return render(request, 'studies/detail.html', {
+        "study": study,
+        "page_obj": page_obj,
+        "visit_types": visit_types,
+    })
+
 
 def create_study(request):
     if request.method == 'POST':
@@ -63,10 +82,25 @@ def create_study(request):
         protocol_id = request.POST.get('protocol_id')
 
         if name and protocol_id:
-            Study.objects.create(name=name, description=description, protocol_id=protocol_id)
+            study = Study.objects.create(name=name, description=description or "", protocol_id=protocol_id)
+
+            for vt in ['baseline', 'month_3', 'year_1']:
+                target_day = request.POST.get(f"{vt}_target")
+                win_before = request.POST.get(f"{vt}_before", 0)
+                win_after = request.POST.get(f"{vt}_after", 0)
+                if target_day:
+                    VisitType.objects.create(
+                        study=study,
+                        visit_code=vt,
+                        target_day=int(target_day),
+                        window_before=int(win_before),
+                        window_after=int(win_after),
+                    )
+
             return redirect('study_dashboard')
-    
+
     return render(request, 'studies/create.html')
+
 
 def add_participant(request, study_id):
     study = get_object_or_404(Study, id=study_id)
@@ -81,7 +115,50 @@ def add_participant(request, study_id):
             )
         except IntegrityError:
             return render(request, "studies/add_participant.html", {"study": study, 'error': True})
-
         return redirect("study_detail", study_id=study.id)
 
     return render(request, "studies/add_participant.html", {"study": study, 'error': False})
+
+
+def edit_study(request, study_id):
+    study = get_object_or_404(Study, id=study_id)
+    if request.method == "POST":
+        study.name = request.POST.get("name", study.name)
+        study.description = request.POST.get("description", study.description)
+        study.protocol_id = request.POST.get("protocol_id", study.protocol_id)
+        study.save()
+
+        for vt in study.visit_types.all():
+            target_day = request.POST.get(f"{vt.visit_code}_target")
+            win_before = request.POST.get(f"{vt.visit_code}_before")
+            win_after = request.POST.get(f"{vt.visit_code}_after")
+            if target_day:
+                vt.target_day = int(target_day)
+                vt.window_before = int(win_before) if win_before else 0
+                vt.window_after = int(win_after) if win_after else 0
+                vt.save()
+
+        return redirect("study_detail", study_id=study.id)
+
+    return render(request, "studies/edit.html", {"study": study})
+
+
+def delete_study(request, study_id):
+    study = get_object_or_404(Study, id=study_id)
+    if request.method == "POST":
+        study.delete()
+        return redirect("study_dashboard")
+    return render(request, "studies/confirm_delete.html", {"object": study, "type": "Study"})
+
+
+def delete_participant(request, study_id, participant_id):
+    participant = get_object_or_404(Participant, id=participant_id, study_id=study_id)
+    if request.method == "POST":
+        participant.delete()
+        return redirect("study_detail", study_id=study_id)
+    return render(request, "studies/confirm_delete.html", {
+        "object": participant,
+        "type": "Participant",
+        "cancel_url": "study_detail",
+        "cancel_arg": study_id,
+    })
